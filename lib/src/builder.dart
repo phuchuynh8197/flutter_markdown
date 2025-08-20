@@ -1584,8 +1584,9 @@ class _ToastContentState extends State<_ToastContent>
               mainAxisSize: MainAxisSize.min,
               children: [
                 SvgPicture.asset(
-                  'assets/icons/ic_copy_code.svg',
+                  'assets/icons/ic_copyed.svg',
                   fit: BoxFit.cover,
+                  package: 'flutter_markdown',
                   width: 24,
                   height: 24,
                 ),
@@ -1607,6 +1608,7 @@ class _ToastContentState extends State<_ToastContent>
                   child: SvgPicture.asset(
                     'assets/icons/ic_close_copy.svg',
                     fit: BoxFit.cover,
+                    package: 'flutter_markdown',
                     width: 24,
                     height: 24,
                   ),
