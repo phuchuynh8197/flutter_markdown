@@ -10,14 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:flutter_highlight/themes/github.dart';
-import 'package:yviet_app/resources/app_color.dart';
-import 'package:yviet_app/resources/app_drawable.dart';
-import 'package:yviet_app/resources/app_strings.dart';
-import 'package:yviet_app/main.dart';
-import 'package:yviet_app/resources/app_style.dart';
 import '_functions_io.dart' if (dart.library.js_interop) '_functions_web.dart';
 import 'style_sheet.dart';
-import 'package:yviet_app/utils/copy_toast.dart';
 import 'widget.dart';
 
 final List<String> _kBlockTags = <String>[
@@ -840,8 +834,13 @@ class MarkdownBuilder implements md.NodeVisitor {
                   children: [
                     Padding(
                       padding: EdgeInsets.only(left: 16),
-                      child: Text(lang == 'plaintext' ? 'Code Block' : lang, style: AppStyle.textStyle12.copyWith(
-                        fontWeight: FontWeight.w500, color: AppColor.h464648, fontFamily: AppString.fontFamilyRoboto,),),
+                      child: Text(lang == 'plaintext' ? 'Code Block' : lang, style: TextStyle(
+                          color: Color(0xFF464648),
+                          fontWeight: FontWeight.w400,
+                          fontSize: 13,
+                          fontFamily: 'Roboto',
+                          decoration: TextDecoration.none).copyWith(
+                        fontWeight: FontWeight.w500, color: Color(0xFF464648)),),
                     ),
                     GestureDetector(
                         behavior: HitTestBehavior.translucent,
@@ -854,13 +853,19 @@ class MarkdownBuilder implements md.NodeVisitor {
                           padding: EdgeInsets.only(right: 16),
                           child: Row(children: [
                             SvgPicture.asset(
-                              AppDrawable.iconCopyCode,
+                              'assets/icons/ic_copy_code.svg',
                               fit: BoxFit.cover,
+                              package: 'flutter_markdown',
                               width: 16,
                               height: 16,
                             ),
                             const SizedBox(width: 8,),
-                            Text("Sao chép", style: AppStyle.textStyle12.copyWith(fontWeight: FontWeight.w400, color: AppColor.h464648, fontFamily: AppString.fontFamilyRoboto,),)
+                            Text("Sao chép", style: TextStyle(
+                                color: Color(0xFF464648),
+                                fontWeight: FontWeight.w400,
+                                fontSize: 13,
+                                fontFamily: 'Roboto',
+                                decoration: TextDecoration.none))
                           ],),
                         )
                     )
@@ -1483,4 +1488,134 @@ class MaxIntrinsicColumnWidth extends TableColumnWidth {
 
   @override
   double flex(Iterable<RenderBox> cells) => 0.0;
+}
+
+class CopyToast {
+  static OverlayEntry? _overlayEntry;
+
+  static void show(BuildContext? context,
+      {String text = 'Đã sao chép', double? paddingTop, double width = 183}) {
+    // final context = navigatorKey.currentContext;
+    // if (context == null) return;
+    remove(); // always remove old one
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: paddingTop ?? (MediaQuery.of(context).viewPadding.top + 62),
+        left: MediaQuery.of(context).size.width * 0.2,
+        right: MediaQuery.of(context).size.width * 0.2,
+        child: _ToastContent(
+          text: text,
+          width: width,
+        ),
+      ),
+    );
+
+    Overlay.of(context!).insert(_overlayEntry!);
+
+    Future.delayed(const Duration(seconds: 2), () {
+      remove();
+    });
+  }
+
+  static void remove() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+}
+
+class _ToastContent extends StatefulWidget {
+  final String text;
+  final double width;
+
+  const _ToastContent({required this.text, this.width = 183});
+
+  @override
+  State<_ToastContent> createState() => _ToastContentState();
+}
+
+class _ToastContentState extends State<_ToastContent>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 200));
+    _fade = Tween<double>(begin: 0, end: 1).animate(_controller);
+
+    // Start animation after frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fade,
+      child: Material(
+        color: Colors.transparent,
+        child: Center(
+          child: Container(
+            //width: widget.width,
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 13),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                    offset: const Offset(2, 2),
+                    blurRadius: 12,
+                    spreadRadius: 4,
+                    color: Color(0xFFCACACA).withOpacity(0.3)),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  'assets/icons/ic_copy_code.svg',
+                  fit: BoxFit.cover,
+                  width: 24,
+                  height: 24,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  widget.text,
+                  style: TextStyle(
+                      color: Color(0xFF4F4F4F),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 15,
+                      decoration: TextDecoration.none),
+                ),
+                const SizedBox(width: 10),
+                GestureDetector(
+                  onTap: () {
+                    CopyToast.remove();
+                  },
+                  behavior: HitTestBehavior.translucent,
+                  child: SvgPicture.asset(
+                    'assets/icons/ic_close_copy.svg',
+                    fit: BoxFit.cover,
+                    width: 24,
+                    height: 24,
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
