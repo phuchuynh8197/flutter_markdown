@@ -478,22 +478,16 @@ class MarkdownBuilder implements md.NodeVisitor {
       );
       final squareBracketMath = RegExp(r'^\[(.+)\]$', dotAll: true);
 
-      debugPrint("== RAW INPUT == $raw");
-
-// Block math: $$ ... $$ hoặc \[...\]
+      // Block math: $$ ... $$ hoặc \[...\]
       if (blockMath.hasMatch(raw)) {
         final match = blockMath.firstMatch(raw)!;
         final latex = (match.group(1) ?? match.group(2))!.trim();
-
-        debugPrint("== BLOCK MATH DETECTED ==");
-        debugPrint("LATEX: $latex");
 
         child = Math.tex(
           r'$' + latex + r'$',
           mathStyle: MathStyle.display,
           textStyle: const TextStyle(fontSize: 16),
           onErrorFallback: (err) {
-            debugPrint("!! BLOCK LATEX ERROR: $err");
             return Text(latex);
           },
         );
@@ -503,21 +497,15 @@ class MarkdownBuilder implements md.NodeVisitor {
         final match = squareBracketMath.firstMatch(raw)!;
         final latex = match.group(1)!.trim();
 
-        debugPrint("== BRACKET MATH DETECTED ==");
-        debugPrint("LATEX: $latex");
-
         child = Math.tex(
           latex,
           mathStyle: MathStyle.display,
           textStyle: const TextStyle(fontSize: 16),
           onErrorFallback: (err) {
-            debugPrint("!! BRACKET LATEX ERROR: $err");
             return Text(latex);
           },
         );
       } else if (inlineMath.hasMatch(raw)) {
-        debugPrint("== INLINE MATH DETECTED ==");
-
         final spans = <InlineSpan>[];
         int lastIndex = 0;
 
@@ -527,7 +515,6 @@ class MarkdownBuilder implements md.NodeVisitor {
           }
 
           final latex = (match.group(1) ?? match.group(2))!.trim();
-          debugPrint("INLINE LATEX: $latex");
 
           spans.add(
             WidgetSpan(
@@ -537,7 +524,6 @@ class MarkdownBuilder implements md.NodeVisitor {
                 mathStyle: MathStyle.text,
                 textStyle: const TextStyle(fontSize: 16),
                 onErrorFallback: (err) {
-                  debugPrint("!! INLINE LATEX ERROR: $err");
                   return Text(latex);
                 },
               ),
@@ -560,7 +546,6 @@ class MarkdownBuilder implements md.NodeVisitor {
           textAlign: _textAlignForBlockTag(_currentBlockTag),
         );
       } else {
-        debugPrint("== NO MATH FOUND ==");
 
         child = _buildRichText(
           TextSpan(
