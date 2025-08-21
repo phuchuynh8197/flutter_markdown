@@ -847,7 +847,7 @@ class MarkdownBuilder implements md.NodeVisitor {
                         onTap: (){
                           Clipboard.setData(ClipboardData(
                               text: codeText));
-                          CopyToast.show(delegate.context);
+                          CopyToastCustom.show(delegate.context);
                         },
                         child: Padding(
                           padding: EdgeInsets.only(right: 16),
@@ -1490,7 +1490,7 @@ class MaxIntrinsicColumnWidth extends TableColumnWidth {
   double flex(Iterable<RenderBox> cells) => 0.0;
 }
 
-class CopyToast {
+class CopyToastCustom {
   static OverlayEntry? _overlayEntry;
 
   static void show(BuildContext? context,
@@ -1602,7 +1602,7 @@ class _ToastContentState extends State<_ToastContent>
                 const SizedBox(width: 10),
                 GestureDetector(
                   onTap: () {
-                    CopyToast.remove();
+                    CopyToastCustom.remove();
                   },
                   behavior: HitTestBehavior.translucent,
                   child: SvgPicture.asset(
